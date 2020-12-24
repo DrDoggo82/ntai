@@ -1,34 +1,32 @@
-// server.js
-// where your node app starts
-
-// we've started you off with Express (https://expressjs.com/)
-// but feel free to use whatever libraries or frameworks you'd like through `package.json`.
-const express = require("express");
-const app = express();
-
-// our default array of dreams
-const dreams = [
-  "Find and count some sheep",
-  "Climb a really tall mountain",
-  "Wash the dishes"
-];
-
-// make all the files in 'public' available
-// https://expressjs.com/en/starter/static-files.html
-app.use(express.static("public"));
-
-// https://expressjs.com/en/starter/basic-routing.html
-app.get("/", (request, response) => {
-  response.sendFile(__dirname + "/views/index.html");
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var express_1 = __importDefault(require("express"));
+var cors_1 = __importDefault(require("cors"));
+var dotenv_1 = __importDefault(require("dotenv"));
+var path_1 = __importDefault(require("path"));
+var ip_1 = __importDefault(require("ip"));
+var doujins_1 = __importDefault(require("./api/doujins"));
+var media_1 = __importDefault(require("./api/media"));
+var error_handler_1 = __importDefault(require("./middlewares/error-handler"));
+dotenv_1.default.config();
+var app = express_1.default();
+var port = process.env.PORT;
+// middlewares
+app.use(cors_1.default());
+app.use(express_1.default.json());
+// api routes
+app.use("/api", doujins_1.default);
+app.use("/api", media_1.default);
+// serve react
+app.use(express_1.default.static(path_1.default.join(__dirname, "app", "build")));
+app.get("/*", function (_, res) {
+    res.sendFile(path_1.default.join(__dirname, "app", "build", "index.html"));
 });
-
-// send the default array of dreams to the webpage
-app.get("/dreams", (request, response) => {
-  // express helps us take JS objects and send them as JSON
-  response.json(dreams);
-});
-
-// listen for requests :)
-const listener = app.listen(process.env.PORT, () => {
-  console.log("Your app is listening on port " + listener.address().port);
+// error handling middleware
+app.use(error_handler_1.default);
+app.listen(port, function () {
+    console.log("server running on " + ip_1.default.address() + ":" + port);
 });
